@@ -41,7 +41,6 @@ def get_csv(add) :
       break
   csv_data = data_list[found]
   value = [value for key, value in csv_data.items() if key == 'contentUrl'][0]
-  print(value)
   return value
 
 def read_csv() :
@@ -51,7 +50,6 @@ def read_csv() :
   data_file = pd.read_csv('data.csv', on_bad_lines='skip', sep=';')
   data_to_keep = ['country_code', 'cou_name_en', 'population']
   filtered_data = data_file[data_to_keep]
-  print(type(filtered_data))
   filtered_csv(filtered_data)
 
 def filtered_csv(data) :
@@ -63,7 +61,6 @@ def filtered_csv(data) :
   data = data.loc[data['cou_name_en'].isin(data_unique)==False]
   data_clean = data.drop_duplicates(subset='cou_name_en')
   del data_clean['population']
-  print(data_clean)
   export_txt(data_clean)
 
 def export_txt(data) :
@@ -76,11 +73,14 @@ def main() ->int:
   add = get_info_from_url(base_url)
   value_url = get_csv(add)
   info = requests.get(value_url)
-  with open('data.csv', 'wb') as file :
-    file.write(info.content)
-  read_csv()
-  #remove csv download
-  os.remove("data.csv")
+  if info.status_code == 200 :
+    with open('data.csv', 'wb') as file :
+      file.write(info.content)
+    read_csv()
+    #remove csv download
+    os.remove("data.csv")
+  else :
+    print("CSV is corrupted")
 
   return 0
 
